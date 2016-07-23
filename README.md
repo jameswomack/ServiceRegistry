@@ -18,7 +18,7 @@ const registry = new Registry('127.0.0.1', '4001')
 ## Register a service
 
 ```js
-registry.Register('MyServiceName',      // Name that will be used by your clients
+registry.register('MyServiceName',      // Name that will be used by your clients
                   '10.244.1.105',       // IP that the service is bound to
                   '8080',               // Port that the service is bound to
                   ['Testing', 'V1.1'])  // Some metadata tags
@@ -30,7 +30,7 @@ registry.Register('MyServiceName',      // Name that will be used by your client
 A call to Discover will not fulfill until the required service has been registered into etcd.
 
 ```js
-registry.Discover('MyServiceName')
+registry.discover('MyServiceName')
 .then(function(service) {
         console.log(util.inspect(service))
       })
@@ -50,7 +50,7 @@ registry.Discover('MyServiceName')
 A call to DiscoverAll will not fulfill until **all** the services specified have been registered into etcd.
 
 ```js
-registry.DiscoverAll(['ServiceA', 'ServiceB'])
+registry.discoverAll(['ServiceA', 'ServiceB'])
 .then(function(services) {
         console.log(util.inspect(services));
       })
