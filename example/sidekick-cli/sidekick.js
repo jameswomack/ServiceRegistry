@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-var colors = require('colors');
-var argv = require('optimist')
+const argv = require('optimist')
     .usage('Sidekick.js'.green.bold.underline + ': ' + 'Register' + ' and ' + 'monitor' + ' a service on etcd via CLI. ')
     .demand('n')
     .alias('n', 'name')
@@ -12,6 +11,9 @@ var argv = require('optimist')
     .demand('p')
     .alias('p', 'port')
     .describe('p', 'Port of your service')
+    .demand('r')
+    .alias('r', 'route')
+    .describe('r', 'Route your service will be exposed via')
     .alias('e', 'expiry')
     .describe('e', 'Expiry interval for registration on etcd')
     .default('e', 15)
@@ -26,74 +28,66 @@ var argv = require('optimist')
     .default('ep', 4001)
     .argv
 
-var Registry = require('etcd-service-registry');
-var log = require('winston');
-log.remove(log.transports.Console);
-log.add(log.transports.Console, {'timestamp':true,'colorize':true});
+const Registry = require('etcd-service-registry')
+const log = require('winston')
+log.remove(log.transports.Console)
+log.add(log.transports.Console, {timestamp: true,colorize: true})
 
-var registry = new Registry(argv.ei, argv.ep);
-    
+const registry = new Registry(argv.ei, argv.ep)
+
 console.log('Sidekick Summary'.green.underline)
-console.log('Service Name     : ' + argv.n.blue);
-console.log('Service Endpoint : ' + argv.i.blue + ' : '+ argv.p.toString().blue);
+console.log('Service Name     : ' + argv.n.blue)
+console.log('Service Endpoint : ' + argv.i.blue + ' : '+ argv.p.toString().blue)
 console.log('Health Check     : ' + 'TCP poll'.blue + ' every ' + argv.t.toString().blue + ' second(s)' )
-console.log('Expiry interval  : ' + argv.e.toString().blue + ' second(s)');
+console.log('Expiry interval  : ' + argv.e.toString().blue + ' second(s)')
 console.log('Logs'.green.underline)
 
-var net = require('net');
+const net = require('net')
 
-var retries = 0;
-var maxRetries = 3;
+let retries = 0
+const maxRetries = 3
 
-function healthCheckLoop() {
-    var client = new net.Socket();
+function healthCheckLoop () {
+    const client = new net.Socket()
 
-    client.setTimeout(argv.t * 1000);
+    client.setTimeout(argv.t * 1000)
 
-    client.on('timeout', onHealthFail.bind(this,'Timeout'));
-    client.on('error', onHealthFail);
+    client.on('timeout', onHealthFail.bind(this,'Timeout'))
+    client.on('error', onHealthFail)
 
     // Attempt connection here
     // This will succeed if the TCP socket is bound on the target ip:port
-    client.connect({port: argv.port, host: argv.i}, onHealthPass);
+    client.connect({port: argv.port, host: argv.i, route: argv.route}, onHealthPass)
 
     // If the health check fails, we log it and attempt retry maxRetries times
-    function onHealthFail(reason) {
-        client.destroy();
+    function onHealthFail (reason) {
+        client.destroy()
 
         // If reason is an error object instead of a string, extract the message
-        reason = reason.message || reason;
+        reason = reason.message || reason
 
-        log.warn('Health:'+ ' FAIL'.red + ' Reason: ' + reason.red +  ' Attempt: ' + (retries + 1).toString() + ' of ' + maxRetries.toString());
+        log.warn('Health:'+ ' FAIL'.red + ' Reason: ' + reason.red +  ' Attempt: ' + (retries + 1).toString() + ' of ' + maxRetries.toString())
 
-        retries++;
-        if(retries < maxRetries) {
-            if(reason == 'Timeout') {
+        retries = retries+1
+
+        if (retries < maxRetries)
+            if (reason === 'Timeout')
                 setImmediate(healthCheckLoop)
-            } else {
-                setTimeout(healthCheckLoop, argv.t * 1000); 
-            }
-        }
+            else
+                setTimeout(healthCheckLoop, argv.t * 1000)
     }
 
     // If the service is good, we write to etcd with the TTL expiry set
-    function onHealthPass() {
-        log.info('Health:' + ' PASS'.green);
-        retries = 0;
-        client.destroy();
-        registry.Register(argv.name, argv.ip, argv.port, null, argv.e)
+    function onHealthPass () {
+        log.info('Health:' + ' PASS'.green)
+        retries = 0
+        client.destroy()
+        registry.Register(argv.name, argv.ip, argv.port, argv.route, null, argv.e)
         .then(setTimeout.bind(this,healthCheckLoop, argv.t * 1000))
-        .error(function(err) {
-            log.error('Could not register service into etcd: ' + err);
-        });
-    }
-
-    // This is the case where we've retried maxRetries with no luck
-    // Log to console and suicide
-    // Etcd key expiry will take care of removing the service entry
-    function onTermination() {
-        log.error('Service not reachable even after ' + retries.toString().yellow + ' attempts')
+        .error(function (err) {
+            log.error('Could not register service into etcd: ' + err)
+        })
     }
 };
 
-healthCheckLoop();
+healthCheckLoop()

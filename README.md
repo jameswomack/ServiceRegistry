@@ -9,10 +9,10 @@ In the common use case where your service is a docker container on top of CoreOS
 
 ## Connect to etcd
 ```js
-var Registry = require('etcd-service-registry');
+const Registry = require('etcd-service-registry')
 
-var registry = new Registry();
-var registry = new Registry('127.0.0.1', '4001');
+const registry = new Registry()
+const registry = new Registry('127.0.0.1', '4001')
 ```
 
 ## Register a service
@@ -22,7 +22,7 @@ registry.Register('MyServiceName',      // Name that will be used by your client
                   '10.244.1.105',       // IP that the service is bound to
                   '8080',               // Port that the service is bound to
                   ['Testing', 'V1.1'])  // Some metadata tags
-.then(...);
+.then(...)
 ```
 
 ## Discover a service
@@ -34,12 +34,13 @@ registry.Discover('MyServiceName')
 .then(function(service) {
         console.log(util.inspect(service))
       })
-.then(...);
+.then(...)
 
 // {
 //    name: 'MyServiceName',
 //    ip: '10.244.1.105',
-//    port: '8080'
+//    port: '8080',
+//    route: '/foo',
 //    tags: ['Testing', 'V1.1']
 // }
 ```
@@ -61,6 +62,7 @@ registry.DiscoverAll(['ServiceA', 'ServiceB'])
 //        name: 'ServiceA',
 //        ip: '192.168.1.1',
 //        port: '80',
+//        route: '/bar',
 //        tags: [ 'Production', 'Version-1.12.3' ]
 //     },
 //     ServiceB:
@@ -68,6 +70,7 @@ registry.DiscoverAll(['ServiceA', 'ServiceB'])
 //        name: 'ServiceB',
 //        ip: '192.168.1.2',
 //        port: '81',
+//        route: '/foo',
 //        tags: [ 'Production', 'Version-1.12.4' ]
 //     }
 // }
@@ -87,6 +90,7 @@ Why TCP instead of HTTP? TCP is more generic so it supports a broader array of s
       -n, --name        Name of the service you wish to register  [required]
       -i, --ip          Publicly accesible ip of your service     [required]
       -p, --port        Port of your service                      [required]
+      -r, --route       Route your service will be exposed at     [required]
       -e, --expiry      Expiry interval for registration on etcd  [default: 15]
       -t, --poll        Polling interval for health check         [default: 5]
       --ei, --etcdip    Etcd service ip                           [default: "localhost"]
