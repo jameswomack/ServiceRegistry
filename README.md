@@ -1,15 +1,15 @@
-[![Build Status](https://travis-ci.org/SidBala/ServiceRegistry.svg)](https://travis-ci.org/SidBala/ServiceRegistry)
+[![Build Status](https://travis-ci.org/jameswomack/registrator.svg)](https://travis-ci.org/jameswomack/registrator)
 
-# ServiceRegistry
+# Registrator
 A library to manage service registry and discover over etcd.
 
-You will need a connection to etcd. If you're registering services, you will additionally need the public ip of your host.
+You will need a connection to etcd (`brew install etcd && etcd`).
 
-In the common use case where your service is a docker container on top of CoreOS/Fleet, you will need to connect to the etcd endpoint at 172.17.42.1. You will determine your own ip/port by passing them as parameters in your fleet service definition.
+This module was designed to allow an edge server or middle later to provide a unified façade to other HTTP services.
 
 ## Connect to etcd
 ```js
-const Registry = require('etcd-service-registry')
+const Registry = require('registrator')
 
 const registry = new Registry()
 const registry = new Registry('127.0.0.1', '4001')
@@ -79,7 +79,7 @@ registry.DiscoverAll(['ServiceA', 'ServiceB'])
 
 Running the example
 ```
-node example/proxy-server/
+node examples/proxy-server-restify/
 ```
 
 Accessing a proxy endpoint

@@ -31,7 +31,7 @@ describe('Basic', function () {
 		const registry = new Registry()
 
 		// Register the dummy service A
-		registry.Register(ServiceSansRouter)
+		registry.register(ServiceSansRouter)
 		// Now read directly from etcd the set key
 		.then(() => registry.client.getAsync('ServiceSansRouter'))
 		.then(function (message) {
@@ -48,9 +48,9 @@ describe('Basic', function () {
 		const registry = new Registry()
 
 		// Register the dummy service B
-		registry.Register(ServiceWithRouter)
+		registry.register(ServiceWithRouter)
 		// Discover it immediately
-		.then(registry.Discover.bind(registry, ServiceWithRouter.name))
+		.then(registry.discover.bind(registry, ServiceWithRouter.name))
 		// Check that the returned service is the same
 		.then(function (service) {
 			service.name.should.equal(ServiceWithRouter.name)
@@ -66,11 +66,11 @@ describe('Basic', function () {
 		const registry = new Registry()
 
 		// Register service A
-		registry.Register(ServiceSansRouter)
+		registry.register(ServiceSansRouter)
 		// Register service B
-		.then(() => registry.Register(ServiceWithRouter))
+		.then(() => registry.register(ServiceWithRouter))
 		// Discovery both ServiceSansRouter and ServiceWithRouter
-		.then(() => registry.DiscoverAll([ServiceSansRouter.name, ServiceWithRouter.name]))
+		.then(() => registry.discoverAll([ServiceSansRouter.name, ServiceWithRouter.name]))
 		.then(function (services) {
 
 			console.dir(services, { colors : true, hidden : true, depth : Infinity })

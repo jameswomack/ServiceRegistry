@@ -3,33 +3,14 @@ const HTTPProxy = require('http-proxy')
 const Restify = require('restify')
 const Registry = require('../../')
 
-const proxy = HTTPProxy.createProxyServer()
+const serviceConfigs = require('../shared/service-configs')
 
-const serviceConfigs = [{
-  name   : 'ServiceSansRouter',
-  ip     : '127.0.0.1',
-  port   : 1337,
-  tags   : ['Production', 'Version-1.12.2']
-}, {
-  name   : 'ServiceWithRouter',
-  ip     : '127.0.0.1',
-  port   : 1338,
-  router : {
-    '/foo' : [{
-      method : 'GET',
-      path   : '/snore/lax'
-    }, {
-      method : 'PUT',
-      path   : '/poke/:mon'
-    }]
-  },
-  tags   : ['Development', 'Version-9.98.7']
-}]
+const proxy = HTTPProxy.createProxyServer()
 
 const registry = new Registry(/* argv.ei, argv.ep */)
 
 serviceConfigs.forEach(serviceConfig => {
-  registry.Register(serviceConfig)
+  registry.register(serviceConfig)
 
   const server = Restify.createServer()
 
@@ -51,7 +32,7 @@ serviceConfigs.forEach(serviceConfig => {
       })
     })
   else
-    server.use(function (req, res, next) {
+    server.get('/', function (req, res, next) {
       res.send({
         params : req.params
       })
@@ -82,7 +63,7 @@ server.listen(5000, function () {
   console.info('Listening on 5000')
 })
 
-registry.Discover('ServiceWithRouter')
+registry.discover('ServiceSansRouter')
   .then(function (service) {
     if (service.router)
       Object.keys(service.router).forEach(pathPrefix => {
@@ -99,11 +80,17 @@ registry.Discover('ServiceWithRouter')
           })
         })
       })
-    else
-      server.use(function (req, res, next) {
-        res.send({
-          params : req.params
+    else {
+      const pathPrefix = `/${service.name.toLowerCase().replace(/^\//g, '')}`
+      ;[ 'get', 'post', 'put', 'del' ].forEach(method => {
+        server[method](pathPrefix, function (req, res) {
+          const target = `http://${service.ip}:${service.port}`
+          console.info(req, pathPrefix, service, target)
+          proxy.web(req, res, {
+            target     : target,
+            ignorePath : true
+          })
         })
-        next()
       })
+    }
   })
