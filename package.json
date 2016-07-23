@@ -1,15 +1,15 @@
 {
   "name": "etcd-service-registry",
-  "version": "0.0.6",
+  "version": "1.0.0-beta.0",
   "description": "A node.js library to manage service discovery and registration on top of etcd",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --recursive",
-    "watch": "./node_modules/mocha/bin/mocha -w --recursive"
+    "test": "mocha --recursive",
+    "watch": "mocha -w --recursive"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/SidBala/ServiceRegistry.git"
+    "url": "https://github.com/jameswomack/ServiceRegistry.git"
   },
   "keywords": [
     "service",
@@ -23,18 +23,21 @@
     "change",
     "ports"
   ],
-  "author": "Sid Bala <Sid.Bala@Outlook.com> (http://SidBala.com)",
+  "author": "James J. Womack <james@womack.io> (http://womack.io)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/SidBala/ServiceRegistry/issues"
+    "url": "https://github.com/jameswomack/ServiceRegistry/issues"
   },
-  "homepage": "https://github.com/SidBala/ServiceRegistry",
+  "homepage": "https://github.com/jameswomack/ServiceRegistry",
   "dependencies": {
     "bluebird": "^2.9.13",
-    "chai": "^2.1.0",
     "log-colors": "^1.0.0",
     "mocha": "^2.1.0",
-    "node-etcd": "^4.0.0",
-    "underscore": "^1.8.2"
+    "node-etcd": "^4.0.0"
+  },
+  "devDependencies": {
+    "chai": "^2.1.0",
+    "eslint": "3.1.1",
+    "jscs": "3.0.7"
   }
 }
