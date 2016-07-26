@@ -18,10 +18,21 @@ const registry = new Registry('127.0.0.1', '4001')
 ## Register a service
 
 ```js
-registry.register('MyServiceName',      // Name that will be used by your clients
-                  '10.244.1.105',       // IP that the service is bound to
-                  '8080',               // Port that the service is bound to
-                  ['Testing', 'V1.1'])  // Some metadata tags
+  name = 'NamelessService', ip = '127.0.0.1', port = 8080, router, tags = [ ], ttl = 300
+registry.register({
+  name   : 'MyServiceName',      // Name that will be used by your clients
+  ip     : '10.244.1.105',       // IP that the service is bound to
+  port   : '8080',               // Port that the service is bound to
+  router : {                     // COnfiguration for how your service will be exposed
+    '/foo' : [{
+      method : 'GET',
+      path   : '/snore/lax'
+    }, {
+      method : 'PUT',
+      path   : '/poke/:mon'
+    }]
+  },
+  tags   : ['Testing', 'V1.1'])  // Some metadata tags
 .then(...)
 ```
 
